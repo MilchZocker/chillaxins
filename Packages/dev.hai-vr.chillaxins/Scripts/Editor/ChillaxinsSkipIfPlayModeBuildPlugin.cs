@@ -33,8 +33,18 @@ namespace Hai.Chillaxins
     {
         public override string QualifiedName => "Hai.Chillaxins.ChillaxinsSkipIfPlayModeBuildPlugin";
 
+        // New preference key to disable Play Mode Upload Trigger
+        private const string DisablePlayModeUploadTriggerKey = "Chillaxins_DisablePlayModeUploadTrigger";
+
         protected override void Configure()
         {
+            // Check if the feature is disabled
+            if (EditorPrefs.GetBool(DisablePlayModeUploadTriggerKey, true)) // Default is disabled
+            {
+                Debug.Log("(Chillaxins) Play Mode Upload Trigger is disabled.");
+                return;
+            }
+
             // This is a hack, as NDMF processes the avatar when entering Play Mode as the result of an upload.
             InPhase(BuildPhase.Resolving)
                 .Run("Chillaxins: If this is a Play Mode build, skip NDMF", EvaluateSkip);
@@ -44,9 +54,9 @@ namespace Hai.Chillaxins
         {
             if (!Application.isPlaying) return;
             if (!EditorPrefs.GetBool("m_ABI_isBuilding")) return;
-            
+
             Debug.Log("(Chillaxins) Detected a Play Mode build, skipping avatar...");
-            
+
             context.AvatarRootObject.SetActive(false);
             var avatarForScreenshots = Object.Instantiate(context.AvatarRootObject);
             foreach (var comp in avatarForScreenshots.GetComponents<Component>())

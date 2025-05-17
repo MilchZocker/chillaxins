@@ -36,17 +36,27 @@ namespace Hai.Chillaxins
         private const string BuildUtility_ClassFullName = "ABI.CCK.Scripts.Editor.CCK_BuildUtility";
         private const string PreAvatarBundleEvent_FieldName = "PreAvatarBundleEvent";
 
+        // New preference key to disable Pre-Avatar Bundle Event
+        private const string DisablePreAvatarBundleEventKey = "Chillaxins_DisablePreAvatarBundleEvent";
+
         static ChillaxinsPreBuildAvatar()
         {
             if (Application.isPlaying) return;
-            
+
+            // Check if the feature is disabled
+            if (EditorPrefs.GetBool(DisablePreAvatarBundleEventKey, true)) // Default is disabled
+            {
+                Debug.Log("(Chillaxins) Pre-Avatar Bundle Event is disabled.");
+                return;
+            }
+
             UnityEvent<GameObject> preAvatarBundleEvent = FindPreAvatarBundleEventOrNull();
             if (preAvatarBundleEvent == null)
             {
                 Debug.LogWarning("(Chillaxins) Failed to find CCK_BuildUtility.PreAvatarBundleEvent");
                 return;
             }
-            
+
             Debug.Log($"(Chillaxins) Found CCK_BuildUtility.PreAvatarBundleEvent ({preAvatarBundleEvent.GetType().FullName}), adding NDMF listener...");
             preAvatarBundleEvent.AddListener(OnPreAvatarBundleEvent);
         }
@@ -59,7 +69,7 @@ namespace Hai.Chillaxins
             if (t_CCK_BuildUtility == null) return null;
 
             var f_PreAvatarBundleEvent = t_CCK_BuildUtility.GetField(PreAvatarBundleEvent_FieldName);
-            
+
             return (UnityEvent<GameObject>)f_PreAvatarBundleEvent.GetValue(null);
         }
 
