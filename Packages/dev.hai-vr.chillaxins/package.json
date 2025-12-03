@@ -10,5 +10,7 @@
   "dependencies": {
     "com.unity.burst": "1.6.6"
   },
-  "url" : "https://docs.hai-vr.dev/docs/products/chillaxins"
+  "url" : "https://docs.hai-vr.dev/docs/products/chillaxins",
+  "documentationUrl": "https://docs.hai-vr.dev/docs/products/chillaxins",
+  "changelogUrl": "https://docs.hai-vr.dev/docs/changelogs/chillaxins"
 }
