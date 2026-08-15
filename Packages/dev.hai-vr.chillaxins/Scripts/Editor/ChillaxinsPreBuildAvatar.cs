@@ -20,7 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if CVR_CCK_EXISTS && CHILLAXINS_NDMF_IS_INSTALLED
+// This hooks into the pre-CCK4 build pipeline (CCK_BuildUtility.PreAvatarBundleEvent).
+// CCK4+ uses a different build pipeline entirely; see ChillaxinsPreBuildAvatarNew.cs for that one.
+#if CVR_CCK_EXISTS && !CVR_CCK_4_OR_NEWER && CHILLAXINS_NDMF_IS_INSTALLED
 using System;
 using System.Linq;
 using UnityEditor;
