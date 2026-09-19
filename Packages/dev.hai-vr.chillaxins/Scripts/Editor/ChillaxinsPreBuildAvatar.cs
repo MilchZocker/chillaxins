@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 // 
 // Copyright (c) 2024 Haï~ (@vr_hai github.com/hai-vr)
 // 
@@ -78,7 +78,7 @@ namespace Hai.Chillaxins
         private static void OnPreAvatarBundleEvent(GameObject avatar)
         {
             Debug.Log("(Chillaxins) Running NDMF...");
-            AvatarProcessor.ProcessAvatar(avatar);
+            AvatarProcessor.ProcessAvatar(avatar, ChilloutVRPlatform.Instance);
         }
     }
 }

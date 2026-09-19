@@ -151,7 +151,7 @@ namespace Hai.Chillaxins
             try
             {
                 Debug.Log("(Chillaxins) Running NDMF...");
-                AvatarProcessor.ProcessAvatar(avatar);
+                AvatarProcessor.ProcessAvatar(avatar, ChilloutVRPlatform.Instance);
                 RemoveMissingScriptsRecursively(avatar);
             }
             catch (Exception e)
