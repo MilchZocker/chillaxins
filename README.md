@@ -66,8 +66,8 @@ Chillaxins adds convenient toggles under the Unity Editor menu:
 ## 🚀 Installation
 
 ### Option 1: Unitypackage (Recommended)
-1. Download the latest `.unitypackage` file from [GitHub Releases](https://github.com/hai-vr/chillaxins/releases).
-2. Import the package into your Unity project (`Assets > Import Package > Custom Package...`).
+1. Download the latest `.zip` file from [GitHub Releases](https://github.com/MilchZocker/chillaxins/releases).
+2. Import the package into your Unity project (`Package Manager > Add Package from Disk > select the package.json...`).
 3. **Close your Unity project completely.**
 4. **Reopen your Unity project.**
 
