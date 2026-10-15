@@ -1,0 +1,96 @@
+name: Update-UPM-Branch
+
+on:
+  release:
+    types: [published]
+  workflow_call:
+    inputs:
+      release_tag:
+        description: Existing release tag to package
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-upm
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from tag
+        id: tag
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || github.event.release.tag_name }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          tag = os.environ['RELEASE_TAG']
+          version = tag.removeprefix('v')
+          numeric = r'(0|[1-9][0-9]*)'
+          prerelease_id = r'(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)'
+          pattern = rf'{numeric}\.{numeric}\.{numeric}(-{prerelease_id}(\.{prerelease_id})*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?'
+          if not re.fullmatch(pattern, version):
+              raise SystemExit(f'Release tag must be a semantic version, optionally prefixed with v: {tag!r}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f'version={version}\n')
+          PY
+
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/tags/${{ inputs.release_tag || github.event.release.tag_name }}
+
+      - name: Prepare release source
+        env:
+          PACKAGE_VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          git switch -c upm-release-source
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path('Packages/dev.hai-vr.chillaxins/package.json')
+          package = json.loads(path.read_text(encoding='utf-8'))
+          package['version'] = os.environ['PACKAGE_VERSION']
+          path.write_text(json.dumps(package, indent=2) + '\n', encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Packages/dev.hai-vr.chillaxins/package.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: prepare UPM package $PACKAGE_VERSION"
+          fi
+
+      - name: Create UPM Branch
+        uses: hecomi/create-upm-branch-action@main
+        with:
+          # This action also writes git-tag into package.json: use the version without v.
+          git-tag: ${{ steps.tag.outputs.version }}
+          main-branch: upm-release-source
+          pkg-root-dir-path: Packages/dev.hai-vr.chillaxins
+          root-files: README.md
+
+      - name: Verify published package
+        env:
+          PACKAGE_VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          version = os.environ['PACKAGE_VERSION']
+          for branch in ('upm', f'upm@{version}'):
+              # Inspect the remote output too: the splitting action can continue after an error.
+              ref = f'refs/remotes/origin/{branch}'
+              subprocess.run(['git', 'fetch', 'origin', f'+refs/heads/{branch}:{ref}'], check=True)
+              package = json.loads(subprocess.check_output(['git', 'show', f'{ref}:package.json'], text=True))
+              if package.get('name') != 'dev.hai-vr.chillaxins' or package.get('version') != version:
+                  raise SystemExit(f'Invalid published package on {branch}')
+              print(f'Verified {branch}: {package["name"]} {version}')
+          PY
