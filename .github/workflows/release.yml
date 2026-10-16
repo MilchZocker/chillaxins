@@ -12,6 +12,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.version.outputs.prop }}
     steps:
     
       - name: Checkout
@@ -49,7 +51,15 @@ jobs:
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5
         with:
           tag_name: ${{ steps.version.outputs.prop }}
+          target_commitish: ${{ github.sha }}
           files: |
             ${{ env.zipFile }}
             ${{ env.unityPackage }}
             Packages/${{ env.packageName }}/package.json
+
+  # Releases created with GITHUB_TOKEN do not trigger release-event workflows.
+  publish-upm:
+    needs: build
+    uses: ./.github/workflows/upm-release.yml
+    with:
+      release_tag: ${{ needs.build.outputs.release_tag }}

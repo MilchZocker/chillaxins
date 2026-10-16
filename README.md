@@ -1,5 +1,7 @@
 # Chillaxins
 
+This is the **[MilchZocker fork of Haï's Chillaxins](https://github.com/MilchZocker/chillaxins)**, used with [NDMF Merge](https://github.com/MilchZocker/NDMF-Merge) and [NDMF Avatar Optimization](https://github.com/MilchZocker/NDMF-Avatar-Optimization). Install from this repository to get the fork's CVR build integration and Manual Bake changes. The upstream package-manager listing installs upstream Chillaxins, not this fork.
+
 Chillaxins is a Unity Editor package that lets you use non-destructive tools on [ChilloutVR](https://documentation.abinteractive.net/cck/) avatars, [Basis](https://github.com/dooly123/Basis) avatars, and [Warudo](https://warudo.app/) character mods.
 
 Using this, you can use products like [⭐ Starmesh](https://docs.hai-vr.dev/docs/products/starmesh), [⭐ FaceTra Shape Creator](https://docs.hai-vr.dev/docs/products/facetra-shape-creator), and [Prefabulous Universal](https://docs.hai-vr.dev/docs/products/prefabulous) across supported platforms.
@@ -65,17 +67,40 @@ Chillaxins adds convenient toggles under the Unity Editor menu:
 
 ## 🚀 Installation
 
-### Option 1: Unitypackage (Recommended)
-1. Download the latest `.zip` file from [GitHub Releases](https://github.com/MilchZocker/chillaxins/releases).
-2. Import the package into your Unity project (`Package Manager > Add Package from Disk > select the package.json...`).
-3. **Close your Unity project completely.**
-4. **Reopen your Unity project.**
+### Option 1: Unity Package Manager (Git URL)
 
-> [!WARNING]
-> Installing as UPM (Git URL) or as a tarball is not supported by some tools and may result in errors. Only install using the methods described here.
+Install NDMF and your target platform SDK first. In **Window → Package Manager → + → Add package from git URL…**, enter:
 
-### Option 2: ALCOM Package Manager
-If you use the [ALCOM](https://docs.hai-vr.dev/docs/products/listing) package manager, you can add the **Haï ~ Chillaxins** package directly from [our listing](https://docs.hai-vr.dev/docs/products/listing).
+```text
+https://github.com/MilchZocker/chillaxins.git?path=/Packages/dev.hai-vr.chillaxins#main
+```
+
+This installs the fork's development source. Once the UPM workflow has published its first release, use the published package branch instead:
+
+```text
+https://github.com/MilchZocker/chillaxins.git#upm
+```
+
+For a fixed release, select its generated version branch, for example `#upm@1.3.0` after that version has been published. The version branch uses the normalized package version without a leading `v`.
+
+### Option 2: Local package or Unity package
+
+Download a package ZIP from [this fork's GitHub Releases](https://github.com/MilchZocker/chillaxins/releases), extract it outside the Unity project, then use **Package Manager → + → Add package from disk…** and select the extracted `package.json`. Keep that folder in place while the project uses it. Alternatively, import the release's `.unitypackage` through **Assets → Import Package → Custom Package…**.
+
+For a source checkout, the local package folder is `Packages/dev.hai-vr.chillaxins`.
+
+The fork keeps upstream's `dev.hai-vr.chillaxins` package ID. Replace an existing upstream installation and remove old manually imported copies before switching installation methods. After installing, **close and reopen Unity completely** so the bundled libraries load.
+
+### Publishing releases and UPM packages
+
+The fork keeps its ZIP/Unity package release flow and adds UPM publishing using the same package-splitting action as the NDMF tools:
+
+- **Actions → Build Release → Run workflow:** set `Packages/dev.hai-vr.chillaxins/package.json` to the intended version first, then run on the source branch. The workflow creates a release/tag at the selected commit, attaches the ZIP, Unity package, and manifest, then calls the UPM publishing workflow directly. This explicit call is needed because releases created with `GITHUB_TOKEN` do not trigger another release-event workflow.
+- **Publish a release through GitHub:** use an existing tag such as `1.3.0` or `v1.3.0`. The **Update-UPM-Branch** workflow also runs on `release: published`.
+
+UPM publishing checks out the release tag, normalizes the manifest version (removing a leading `v`), and prepares a local release branch. It does not push a version bump to the source branch or change the release tag. It publishes `Packages/dev.hai-vr.chillaxins` at the root of **`upm`** and **`upm@<version>`**, includes this README, and retains the package's DLLs, license notices, and `.meta` files. Both workflows need `contents: write`; the generated branches must permit the publishing action's force pushes.
+
+Check the Actions run and the published package's manifest before announcing a release. Publishing a tag alone does not run either workflow. Before the first UPM release, use the source Git URL above.
 
 ---
 
